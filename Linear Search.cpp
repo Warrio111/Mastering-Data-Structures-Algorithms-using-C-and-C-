@@ -1,96 +1,92 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
-struct Node
+
+struct Array
 {
-	int data;
-	struct Node* next;
-}*first = NULL;
-void create(int A[], int n)
+	int A[10];
+	int size;
+	int length;
+};
+void Display(struct Array* arr)
 {
 	int i;
-	struct Node* t, * last;
-	first = (struct Node*)malloc(sizeof(struct Node));
-	first->data = A[0];
-	first->next = NULL;
-	last = first;
+	printf("\nElements are\n");
+	for (i = 0; i < (*arr).length; i++)
+	{
+		printf("%d ", arr->A[i]);
+	}
+}
+void Append(struct Array* arr, int x)
+{
+	if (arr->length < arr->size)
+	{
+		arr->A[arr->length++] = x;
+	}
+}
+void Insert(struct Array* arr, int index, int x)
+{
+	int i;
+	if (index >= 0 && index <= arr->length)
+	{
+		for (i = arr->length; i > index; i--)
+		{
+			arr->A[i] = arr->A[i - 1];
 
-	for (i = 1; i < n; i++)
-	{
-		t = (struct Node*)malloc(sizeof(struct Node));
-		t->data = A[i];
-		t->next = NULL;
-		last->next = t;
-		last = t;
+		}
+		arr->A[index] = x;
+		arr->length++;
 	}
 }
-void Display(struct Node* p)
+int Delete(struct Array* arr, int index)
 {
-	while (p != NULL)
+	int i;
+	int x = 0;
+	if (index >= 0 && index < arr->length)
 	{
-		printf("%d ", p->data);
-		p = p->next;
+		x = arr->A[index];
+		for (i = index; i < arr->length - 1; i++)
+		{
+			arr->A[i] = arr->A[i + 1];
+		}
+		arr->length--;
+		return x;
 	}
+	return 0;
 }
-void RDisplay(struct Node* p)
+void swap(int* x, int* y)
 {
-	if (p != NULL)
-	{
-		RDisplay(p->next);
-		printf("%d ", p->data);
+	int temp;
+	temp = *x;
+	*x = *y;
+	*y = temp;
+}
+int LinearSearch(struct Array* arr, int key)
+{
+	int i;
 
-	}
-}
-int count(struct Node* p)
-{
-	int l;
-	l = 0;
-	while (p)
+	for (i = 0; i < arr->length; i++)
 	{
-		l++;
-		p = p->next;
+		if (key == arr->A[i])
+		{
+			swap(&arr->A[i], &arr->A[i - 1]);
+			return i;
+		}
 	}
-	return l;
-}
-int Rcount(struct Node* p)
-{
-	if (NULL != p)
-	{
-		return Rcount(p->next) + 1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-int Sum(struct Node* p)
-{
-	int sum;
-	sum = 0;
-	while (NULL != p)
-	{
-		sum = sum + p->data;
-		p = p->next;
-	}
-	return (sum);
-}
-int RSum(struct Node* p)
-{
-	if (NULL == p)
-	{
-		return 0;
-	}
-	else
-	{
-		return RSum(p->next) + p->data;
-	}
+
+
+
+	return -1;
 }
 int main()
 {
-	struct Node* temp;
-	int A[] = { 3,5,7,10,25,8,32,2 };
-	create(A, 8);
 
-	Display(first);
+	struct Array arr = { {2,3,4,5,6},10,5 };
+
+	printf("%d\n", LinearSearch(&arr, 5));
+	Display(&arr);
+
 
 	return 0;
 }
