@@ -136,22 +136,41 @@ struct Node* RSearch(struct Node* p, int key)
 	if (key == p->data) { return p; }
 	return RSearch(p->next, key);
 }
-
-int main()
+void Insert(struct Node* p, int index, int x)
 {
-	struct Node* temp;
-	int A[] = { 3,5,7,10,25,8,35,2 };
-	create(A, 8);
-	temp = LSearch(first, 25);
-	if (temp)
+	struct Node* t;
+	int i;
+	if (index < 0 || index>count(p))
 	{
-		printf("key is found\n", temp->data);
+		return;
+	}
+
+	t = (struct Node*)malloc(sizeof(struct Node));
+	t->data = x;
+
+	if (index == 0)
+	{
+		t->next = first;
+		first = t;
 	}
 	else
 	{
-		printf("key not found\n");
+		for (i = 0; i < index - 1; i++)
+		{
+			p = p->next;
+		}
+		t->next = p->next;
+		p->next = t;
 
 	}
+
+}
+int main()
+{
+	Insert(first, 0, 12);
+	Insert(first, 1, 20);
+	Insert(first, 2, 30);
+	Insert(first, 2, 40);
 
 	Display(first);
 
