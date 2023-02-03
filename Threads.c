@@ -3,50 +3,81 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
+#define MAX_THREADS 8
+#define TAM_MAX 100000
 
-DWORD WINAPI Display(LPVOID arg);
+void LoadList(int List[], long size);
+DWORD WINAPI SumList(LPVOID arg);
 
+typedef struct {
+	int* List;
+	long ini, end, sum;
+} TdataList;
 
-int main(int arg, char* argv[])
-{
-	HANDLE hHandler, hHandler2;
-	DWORD Thread, Thread2;
-	HRESULT hr;
+int main(int argc, char* argv[]) {
+	int i, numThreads, List[TAM_MAX];
+	long ini, end, sizeList, TotalSum = 0;
+	TdataList** params;
+	HANDLE HandlerThreads[MAX_THREADS];
+	DWORD Threads[MAX_THREADS];
 
-	hHandler = CreateThread(NULL, 0, Display, (LPVOID)1, 0, &Thread);
-	hHandler2 = CreateThread(NULL, 0, Display, (LPVOID)11, 0, &Thread2);
+	sizeList = 100000;
+	LoadList(List, sizeList);
 
-	if (hHandler == NULL || hHandler2 == NULL)
-	{
-		printf("Threads are created in a wrong way");
-		exit(-1);
+	numThreads = 4;
+	params = (TdataList**)malloc(sizeof(TdataList*));
+
+	for (i = 0; i < numThreads; i++) {
+		ini = ((int)sizeList / numThreads) * i;
+		end = i < numThreads ? ((int)sizeList / numThreads) * (i + 1) : sizeList;
+
+		params[i] = (TdataList*)malloc(sizeof(TdataList));
+		params[i]->List = List;
+		params[i]->ini = ini;
+		params[i]->end = end;
+		params[i]->sum = 0;
+
+		HandlerThreads[i] = CreateThread(NULL, 0, SumList, (LPVOID)params[i], 0, &Threads[i]);
+		if (HandlerThreads[i] == NULL) {
+			printf("Error al crear el Thread %d\n", i);
+			exit(-1);
+		}
 	}
-	printf("Threads creation SUCCEEDED\n");
-	WaitForSingleObject(hHandler, INFINITE);
-	WaitForSingleObject(hHandler2, INFINITE);
-	printf("Threads finished all the work");
-	CloseHandle(hHandler);
-	CloseHandle(hHandler2);
+
+	WaitForMultipleObjects(numThreads, HandlerThreads, TRUE, INFINITE);
+
+	printf("Termino la ejecucion de los Threads\n");
+
+	for (i = 0; i < numThreads; i++) {
+		printf("sum Thread %d: %ld\n", i, params[i]->sum);
+		TotalSum += params[i]->sum;
+		CloseHandle(HandlerThreads[i]);
+	}
+
+	printf("\nsum total: %ld\n", TotalSum);
 
 	return 0;
 }
 
-DWORD WINAPI Display(LPVOID arg)
-{
-	int i;
-	int ini;
-	ini = (int)arg;
-	for (i = ini; i < ini + 10; i++)
-	{
-		if (ini == 1)
-		{
-			Sleep(1000 + rand() % 5000);
-		}
-		else
-		{
-			Sleep(5000 + rand() % 5000);
-		}
-		printf("%d\n", i);
+void LoadList(int List[], long size) {
+	long i;
+
+	for (i = 0; i < size; i++) {
+		List[i] = 1 + rand() % 1000;
+	}
+}
+
+DWORD WINAPI SumList(LPVOID arg) {
+	TdataList* params = (TdataList*)arg;
+	int* List = params->List;
+	long i, ini, end, * sum;
+
+	ini = params->ini;
+	end = params->end;
+	sum = &(params->sum);
+
+	for (i = ini; i < end; i++) {
+		*sum = *sum + List[i];
 	}
 
 	return 0;
